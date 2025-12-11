@@ -90,7 +90,7 @@ const DynamicContentForm = () => {
     aboutProfileImg: null,
     helpImg: null,
     header_footerlogo: null,
-    footerImg: null,
+    // footerImg removed
   });
 
   const [dynamicData, setDynamicData] = useState([]);
@@ -179,7 +179,7 @@ const DynamicContentForm = () => {
       aboutProfileImg: null,
       helpImg: null,
       header_footerlogo: null,
-      footerImg: null,
+      // footerImg removed
     });
     setEditId(null);
     setUploadProgress(0);
@@ -436,7 +436,7 @@ const DynamicContentForm = () => {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
                 <div className="space-y-4">
                   <FileInputGroup label="Header Logo" name="header_footerlogo" />
-                  <FileInputGroup label="Footer BG Image" name="footerImg" />
+                  {/* Footer BG Image Removed */}
                 </div>
                 <div className="md:col-span-2 space-y-4">
                   <div className="grid grid-cols-2 gap-4">
@@ -469,8 +469,8 @@ const DynamicContentForm = () => {
                 type="submit"
                 disabled={loading || isLocked}
                 className={`px-8 py-3 rounded-xl font-black text-sm tracking-widest uppercase flex items-center gap-2 transition-all shadow-lg ${loading || isLocked
-                    ? 'bg-zinc-800 text-zinc-500 cursor-not-allowed'
-                    : 'bg-cyan-600 hover:bg-cyan-500 text-black btn-primary'
+                  ? 'bg-zinc-800 text-zinc-500 cursor-not-allowed'
+                  : 'bg-cyan-600 hover:bg-cyan-500 text-black btn-primary'
                   }`}
               >
                 {loading ? <RefreshCw className="animate-spin" size={18} /> : <Save size={18} />}
@@ -481,7 +481,7 @@ const DynamicContentForm = () => {
           </form>
         </div>
 
-        {/*  EXISTING DATA LIST  */}
+        {/* EXISTING DATA LIST  */}
         <div className="mt-16">
           <h2 className="text-xl font-bold text-white mb-6 border-l-4 border-cyan-600 pl-4">Current Configuration</h2>
           {dynamicData.length === 0 ? (

@@ -6,7 +6,7 @@ import sgMail from "@sendgrid/mail";
 
 
 
-
+//Email Send Logic 
 export const sendOTP = async (email, otp, isVerify = true) => {
     if (!config.EMAIL_USER || !config.EMAIL_PASS) {
         throw new Error("Email credentials are missing in environment variables");
@@ -40,9 +40,7 @@ export const sendOTP = async (email, otp, isVerify = true) => {
     await sgMail.send(msg);
 };
 
-
-
-
+// User Login and Singup 
 export const signup = async (req, res) => {
     try {
         const { username, email, password } = req.body;
@@ -215,6 +213,7 @@ export const logout = async (req, res) => {
     }
 };
 
+//Password Re-set
 export const forgotPassword = async (req, res) => {
     try {
         const { email } = req.body;
@@ -281,6 +280,43 @@ export const resetPassword = async (req, res) => {
     } catch (error) {
         console.error("Reset Password error:", error.message);
         return res.status(500).json({ error: "Server error during password reset" });
+    }
+};
+
+// User Profile Update and Delete
+export const getProfile = async (req, res) => {
+    try {
+
+        const userId = req.user?._id || req.tokenData?._id;
+
+        if (!userId) {
+            return res.status(401).json({
+                success: false,
+                message: "Unauthorized: No user ID found"
+            });
+        }
+
+        const user = await userModel.findById(userId);
+
+
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: "User not found"
+            });
+        }
+
+        res.status(200).json({
+            success: true,
+            user: user
+        });
+
+    } catch (error) {
+        console.error("Profile Error:", error);
+        res.status(500).json({
+            success: false,
+            message: "Server error fetching profile"
+        });
     }
 };
 
@@ -372,43 +408,8 @@ export const deleteAccount = async (req, res) => {
     }
 };
 
-export const getProfile = async (req, res) => {
-    try {
 
-        const userId = req.user?._id || req.tokenData?._id;
-
-        if (!userId) {
-            return res.status(401).json({
-                success: false,
-                message: "Unauthorized: No user ID found"
-            });
-        }
-
-        // Database se user dhundhein (Password hata kar)
-        const user = await userModel.findById(userId);
-
-
-        if (!user) {
-            return res.status(404).json({
-                success: false,
-                message: "User not found"
-            });
-        }
-
-        res.status(200).json({
-            success: true,
-            user: user
-        });
-
-    } catch (error) {
-        console.error("Profile Error:", error);
-        res.status(500).json({
-            success: false,
-            message: "Server error fetching profile"
-        });
-    }
-};
-
+// User Document Verification
 export const doc = async (req, res) => {
     try {
         const card = req?.file?.path;
@@ -439,6 +440,50 @@ export const doc = async (req, res) => {
     }
 };
 
+// User Help Message Send 
+export const userHelp = async (req, res) => {
+    try {
+        const { email, phone, description } = req.body;
+
+        const userId = req.user?._id;
+
+        if (!userId) {
+            return res.status(401).json({ success: false, message: "Unauthorized: User not found." });
+        }
+
+        let imageUrls = [];
+        if (req.files && req.files.length > 0) {
+            imageUrls = req.files.map((file) => file.path);
+        }
+
+        const helpData = await Help.create({
+            user: {
+                userId: userId,
+                email,
+                phone,
+                description,
+                images: imageUrls
+            }
+        });
+
+        res.status(201).json({
+            success: true,
+            message: "Help request submitted successfully!",
+            data: helpData
+        });
+
+    } catch (error) {
+        console.error("Help Controller Error:", error);
+        res.status(500).json({
+            success: false,
+            message: "Server error",
+            error: error.message
+        });
+    }
+};
+
+
+//User car booking cancel and complete ride 
 
 export const booking = async (req, res) => {
     try {
@@ -491,13 +536,11 @@ export const cancelBooking = async (req, res) => {
             return res.status(404).json({ message: "User not found." });
         }
 
-        // find specific booking inside array
         const booking = user.cars.id(carId);
         if (!booking) {
             return res.status(404).json({ message: "Booking not found." });
         }
 
-        // If already cancelled or completed then no need to cancel
         if (booking.status === "cancelled") {
             return res.status(400).json({ message: "Booking already cancelled." });
         }
@@ -508,7 +551,6 @@ export const cancelBooking = async (req, res) => {
             });
         }
 
-        // Update booking status
         booking.status = "cancelled";
 
         await user.save();
@@ -527,44 +569,35 @@ export const cancelBooking = async (req, res) => {
     }
 };
 
-
-export const userHelp = async (req, res) => {
+export const completeRide = async (req, res) => {
     try {
-        const { email, phone, description } = req.body;
-
-        const userId = req.user?._id;
-
-        if (!userId) {
-            return res.status(401).json({ success: false, message: "Unauthorized: User not found." });
+        const { carId } = req.body;
+        if (!carId) {
+            return res.status(400).json({ message: "Car ID is required." });
         }
-
-        let imageUrls = [];
-        if (req.files && req.files.length > 0) {
-            imageUrls = req.files.map((file) => file.path);
+        const user = await userModel.findById(req.user._id);
+        if (!user) {
+            return res.status(404).json({ message: "User not found." });
         }
-
-        const helpData = await Help.create({
-            user: {
-                userId: userId,
-                email,
-                phone,
-                description,
-                images: imageUrls
-            }
-        });
-
-        res.status(201).json({
-            success: true,
-            message: "Help request submitted successfully!",
-            data: helpData
+        const booking = user.cars.id(carId);
+        if (!booking) {
+            return res.status(404).json({ message: "Booking not found." });
+        }
+        if (booking.status === "completed") {
+            return res.status(400).json({ message: "Booking already Completed." });
+        }
+        booking.status = "completed";
+        await user.save();
+        return res.status(200).json({
+            message: "Booking cancelled successfully.",
+            cars: user.cars
         });
 
     } catch (error) {
-        console.error("Help Controller Error:", error);
-        res.status(500).json({
-            success: false,
-            message: "Server error",
-            error: error.message
+        console.error(error);
+        return res.status(500).json({
+            message: "Server error while cancelling booking.",
+            error
         });
     }
-};
+}

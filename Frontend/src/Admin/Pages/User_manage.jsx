@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, Trash2, User, Mail, CheckCircle, X, AlertTriangle, Filter, Eye, CreditCard, ExternalLink, BadgeCheck, ShieldAlert, Image as ImageIcon, Download, FileSpreadsheet } from 'lucide-react';
+import { Search, Trash2, User, Mail, CheckCircle, X, AlertTriangle, Filter, Eye, CreditCard, UserCog, ExternalLink, BadgeCheck, ShieldAlert, Image as ImageIcon, Download, FileSpreadsheet } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const userStyles = `
@@ -122,9 +122,14 @@ const User_manage = () => {
 
   const handleRedirect = () => {
     if (userToView) {
-      navigate(`/admin/user/${userToView._id}`);
+      navigate(`/admin/user/details/${userToView._id}`);
     }
   };
+
+  const UserDetailsRedirect = (user) => {
+    navigate(`/admin/user/details/${user._id}`);
+  }
+
 
   const confirmDelete = (user) => {
     setUserToDelete(user);
@@ -157,7 +162,7 @@ const User_manage = () => {
   //  DOWNLOAD DETAILS HANDLER 
   const downloadDetails = async () => {
     try {
-   const token = localStorage.getItem("adminToken");
+      const token = localStorage.getItem("adminToken");
       await axios.get(`${API}/admin/send-excel-email`, {
         headers: { Authorization: `Bearer ${token}` },
         withCredentials: true
@@ -312,6 +317,14 @@ const User_manage = () => {
                             title="Delete User"
                           >
                             <Trash2 size={18} />
+                          </button>
+
+                          <button
+                            onClick={() => UserDetailsRedirect(user)}
+                            className="p-2 text-zinc-400 hover:text-green-500 hover:bg-green-900/20 rounded-lg transition-all"
+                            title="Delete User"
+                          >
+                            <UserCog size={18} />
                           </button>
                         </div>
                       </td>

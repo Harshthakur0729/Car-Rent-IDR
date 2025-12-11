@@ -614,6 +614,7 @@ export const subAdminUpdate = async (req, res) => {
     }
 };
 
+// User Help msg get 
 export const getHelpmsg = async (req, res) => {
     try {
         const helpMsg = await Help.find().sort({ createdAt: -1 });
@@ -638,7 +639,6 @@ export const getHelpmsg = async (req, res) => {
         });
     }
 };
-
 
 // Send Admin Reply to User
 export const replyAdmin = async (req, res) => {
@@ -742,3 +742,87 @@ export const replyAdmin = async (req, res) => {
     }
 };
 
+
+
+export const updateUserByAdmin = async (req, res) => {
+    try {
+        const {
+            username,
+            email,
+            password,
+            profileImage,
+            card,
+            cardverify,
+            verify
+        } = req.body;
+
+        const { id } = req.params;
+
+        if (!id) {
+            return res.status(400).json({ message: "User ID is required" });
+        }
+
+        const user = await userModel.findById(id);
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        // Update fields only if provided
+        if (username) user.username = username;
+        if (email) user.email = email;
+        if (profileImage) user.profileImage = profileImage;
+        if (card) user.card = card;
+
+        // Booleans → true/false
+        if (typeof cardverify !== "undefined") user.cardverify = cardverify;
+        if (typeof verify !== "undefined") user.verify = verify;
+
+        // Password hashing
+        if (password) {
+            user.password = await userModel.hashPassword(password);
+        }
+
+        await user.save();
+
+        const userData = user.toObject();
+        delete userData.password; // hide password
+
+        return res.status(200).json({
+            message: "User updated successfully",
+            user: userData
+        });
+
+    } catch (error) {
+        console.error("Update User Error:", error.message);
+        return res.status(500).json({ error: "Server error" });
+    }
+};
+
+export const getUserById = async (req, res) => {
+    try {
+        const { id } = req.params; 
+
+        if (!id) {
+            return res.status(400).json({ message: "User ID is required" });
+        }
+
+        const user = await userModel.findById(id);
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        const userData = user.toObject();
+        delete userData.password;
+
+        return res.status(200).json({
+            message: "User data fetched successfully",
+            user: userData
+        });
+    } catch (error) {
+        console.error("GET USER BY ID ERROR:", error);
+        return res.status(500).json({
+            message: "Error fetching user data",
+            error: error.message
+        });
+    }
+};

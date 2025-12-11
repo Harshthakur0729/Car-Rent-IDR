@@ -30,6 +30,7 @@ import DynamicManager from './Admin/Pages/Dynamic'
 import VideoManager from './Admin/Pages/VideoManager'
 import AdminManagement from './Admin/Pages/AdminManagement'
 import AdminHelpCenter from './Admin/Pages/AdminHelpCenter'
+import UserUpdateByAdmin from './Admin/Pages/UserUpdateByAdmin'
 
 
 
@@ -62,7 +63,9 @@ const router = createBrowserRouter([
       { path: "/admin/dynamic-manager", element: <DynamicManager /> },
       { path: "/admin/dynamic-manage-video", element: <VideoManager /> },
       { path: "/admin/admin-management", element: <AdminManagement /> },
-      { path: "/admin/help-center", element: <AdminHelpCenter /> }
+      { path: "/admin/help-center", element: <AdminHelpCenter /> },
+      { path: "/admin/user/details/:id", element: <UserUpdateByAdmin /> }
+
     ],
   },
 

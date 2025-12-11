@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Calendar, Clock, CheckCircle, XCircle, AlertCircle, Car, ChevronRight, FileText, Plus, X, AlertTriangle } from 'lucide-react';
+import { Calendar, Clock, CheckCircle, XCircle, Car, Plus, X, AlertTriangle } from 'lucide-react';
 
 const bookingStyles = `
   html, body { scrollbar-width: none; -ms-overflow-style: none; }
@@ -35,17 +35,26 @@ const MyBookings = () => {
   const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
   const [bookingToCancel, setBookingToCancel] = useState(null);
 
-  const API = import.meta.env.VITE_BACKEND_URL;
+  const processingIds = useRef(new Set());
 
+  const API = import.meta.env.VITE_BACKEND_URL
+
+  // 1. Fetch Bookings
   useEffect(() => {
     const fetchBookings = async () => {
       try {
         const token = localStorage.getItem("userToken");
+        // Only fetch if token exists
+        if (!token) {
+          setLoading(false);
+          return;
+        }
+
         const res = await axios.get(`${API}/user/profile`, {
           withCredentials: true,
           headers: { Authorization: `Bearer ${token}` }
         });
-  
+
         setBookings(res.data.user.cars || []);
 
       } catch (err) {
@@ -57,6 +66,71 @@ const MyBookings = () => {
 
     fetchBookings();
   }, [navigate, API]);
+
+
+  // 2. Logic to Auto-Complete Ride when Time is Out
+  useEffect(() => {
+    // Function to check and complete rides
+    const checkAndCompleteRides = async () => {
+      if (!bookings || bookings.length === 0) return;
+
+      const now = new Date();
+      const token = localStorage.getItem("userToken");
+
+      bookings.forEach(async (booking) => {
+        // Ensure booking has necessary fields
+        if (!booking.endTime) return;
+
+        const endTime = new Date(booking.endTime);
+
+        // Check if status is 'booked', time has passed, and we aren't already processing this ID
+        if (
+          booking.status === 'booked' &&
+          booking._id &&
+          now > endTime &&
+          !processingIds.current.has(booking._id)
+        ) {
+
+          // Mark as processing so we don't hit API twice in next loop
+          processingIds.current.add(booking._id);
+          console.log(`Time out for booking ${booking._id}. Completing ride...`);
+
+          try {
+            // Call the new route you requested
+            const res = await axios.post(
+              `${API}/user/car-ride-complete/${booking._id}`,
+              { carId: booking._id }, // Updated: Sending booking._id to match typical backend ID requirements
+              {
+                headers: { Authorization: `Bearer ${token}` },
+                withCredentials: true
+              }
+            );
+
+            if (res.status === 200) {
+              // Update local state to show "completed"
+              setBookings(prevBookings =>
+                prevBookings.map(b =>
+                  b._id === booking._id ? { ...b, status: 'completed' } : b
+                )
+              );
+            }
+          } catch (error) {
+            console.error(`Failed to auto-complete ride ${booking._id}:`, error);
+            // Remove from processing if failed so it can try again
+            processingIds.current.delete(booking._id);
+          }
+        }
+      });
+    };
+
+    // Run check immediately
+    checkAndCompleteRides();
+
+    // Set interval to check every 5 seconds
+    const intervalId = setInterval(checkAndCompleteRides, 5000);
+
+    return () => clearInterval(intervalId);
+  }, [bookings, API]);
 
 
   const initiateCancel = (bookingId) => {
@@ -127,7 +201,7 @@ const MyBookings = () => {
 
       <div className="fixed inset-0 bg-[linear-gradient(rgba(6,182,212,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(6,182,212,0.03)_1px,transparent_1px)] bg-[size:40px_40px] pointer-events-none z-0" />
 
-      {/*  CANCEL CONFIRMATION MODAL  */}
+      {/* CANCEL CONFIRMATION MODAL  */}
       <AnimatePresence>
         {isCancelModalOpen && (
           <motion.div
@@ -167,7 +241,7 @@ const MyBookings = () => {
 
       <div className="relative z-10 max-w-5xl mx-auto px-6">
 
-        {/*  HEADER SECTION WITH BOOK MORE BUTTON  */}
+        {/* HEADER SECTION WITH BOOK MORE BUTTON  */}
         <div className="flex flex-col md:flex-row justify-between items-end mb-12 gap-6">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -195,9 +269,9 @@ const MyBookings = () => {
           </motion.div>
         </div>
 
-        {/*  BOOKING LIST  */}
+        {/* BOOKING LIST  */}
         <div className="space-y-6">
-          {bookings.length > 0 ? (
+          {bookings && bookings.length > 0 ? (
             bookings.map((booking, index) => (
               <motion.div
                 key={booking._id || index}

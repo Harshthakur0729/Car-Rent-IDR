@@ -91,6 +91,7 @@ const BookCar = () => {
     const API = import.meta.env.VITE_BACKEND_URL;
 
     const hourlyPackages = [
+        { hours: 1, price: 100 },
         { hours: 3, price: 500 },
         { hours: 6, price: 1000 },
         { hours: 8, price: 1300 },
@@ -237,10 +238,10 @@ const BookCar = () => {
                 return;
             }
 
-          
+
             const payload = {
                 carImage: carData.images ? carData.images[0] : "",
-                carNumber: carData.carnumber || "N/A", 
+                carNumber: carData.carnumber || "N/A",
                 carName: carData.name,
                 price: totalPrice.toString(),
                 timing: durationLabel,
@@ -331,7 +332,7 @@ const BookCar = () => {
                         <div className="space-y-4">
                             <div className="flex justify-between items-center p-4 bg-black/40 rounded-xl border border-zinc-800">
                                 <span className="text-xs text-zinc-500 uppercase tracking-wider flex items-center gap-2"><DollarSign size={14} /> Base Rate (Daily)</span>
-                                <span className="text-white font-bold font-mono">${carData.price}</span>
+                                <span className="text-white font-bold font-mono">₹{carData.price}</span>
                             </div>
                             {/* Dynamic Car Number */}
                             <div className="flex justify-between items-center p-4 bg-black/40 rounded-xl border border-zinc-800">
@@ -447,7 +448,7 @@ const BookCar = () => {
                                                     className={`hourly-card p-3 rounded-xl text-center ${selectedPackage?.hours === pkg.hours ? 'selected' : ''}`}
                                                 >
                                                     <span className="block text-lg font-black text-white">{pkg.hours}H</span>
-                                                    <span className="text-xs text-zinc-400 font-mono">${pkg.price}</span>
+                                                    <span className="text-xs text-zinc-400 font-mono">₹{pkg.price}</span>
                                                 </div>
                                             ))}
                                         </div>
@@ -476,8 +477,8 @@ const BookCar = () => {
                                 type="submit"
                                 disabled={loading || totalPrice <= 0}
                                 className={`w-full py-4 rounded-xl font-black text-sm tracking-[0.2em] uppercase flex items-center justify-center gap-2 transition-all shadow-lg ${loading || totalPrice <= 0
-                                        ? 'bg-zinc-800 text-zinc-500 cursor-not-allowed'
-                                        : 'bg-cyan-600 text-black hover:bg-cyan-400 shadow-cyan-500/30'
+                                    ? 'bg-zinc-800 text-zinc-500 cursor-not-allowed'
+                                    : 'bg-cyan-600 text-black hover:bg-cyan-400 shadow-cyan-500/30'
                                     }`}
                             >
                                 {loading ? 'PROCESSING...' : 'CONFIRM BOOKING'} <CheckCircle size={16} />

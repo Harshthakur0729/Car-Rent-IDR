@@ -1,5 +1,5 @@
 import express from "express";
-import { booking, cancelBooking, deleteAccount, doc, forgotPassword, login, logout, resendOTP, resetPassword, signup, update, verifyEmailOTP, getProfile, userHelp } from "../controller/user.controller.js";
+import { booking, cancelBooking, deleteAccount, doc, forgotPassword, login, logout, resendOTP, resetPassword, signup, update, verifyEmailOTP, getProfile, userHelp, completeRide } from "../controller/user.controller.js";
 import { Isauth } from "../utils/Isauth.js";
 import { docFileUpload, helpImages, upload } from "../utils/Profileimage.js";
 const router = express.Router();
@@ -21,6 +21,7 @@ router.route("/doc-upload").post(Isauth, docFileUpload.single("Document_File_upl
 // car details
 router.route("/car-booking").post(Isauth, booking)
 router.route("/car-booking-cancel/:id").post(Isauth, cancelBooking)
+router.route("/car-ride-complete/:id").post(Isauth, completeRide)
 // help
 router.route("/help").post(Isauth, helpImages.array("Help"), userHelp);
 export default router;

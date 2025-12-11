@@ -42,7 +42,7 @@ const userSchema = new mongoose.Schema({
 
             status: {
                 type: String,
-                enum: ["booked", "cancelled", " Completed"],
+                enum: ["booked", "cancelled", "completed"],
                 default: "booked"
             }
         }
