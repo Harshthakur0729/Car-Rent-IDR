@@ -47,6 +47,14 @@ const securityStyles = `
   .video-overlay-red {
     background: linear-gradient(to bottom, rgba(0,0,0,0.3), rgba(20,0,0,0.95) 100%, #000);
   }
+
+  /* FORCE HIDE VIDEO CONTROLS */
+  video::-webkit-media-controls {
+      display: none !important;
+  }
+  video {
+      pointer-events: none; 
+  }
 `;
 
 const Security = () => {
@@ -54,10 +62,6 @@ const Security = () => {
   const API = import.meta.env.VITE_BACKEND_URL;
 
   const [videoUrl, setVideoUrl] = useState(null);
-
-
-
-
 
   const fetchVideoData = async () => {
     try {
@@ -102,16 +106,23 @@ const Security = () => {
     <div className="min-h-screen bg-black text-white font-sans selection:bg-red-600 selection:text-black overflow-x-hidden">
       <style>{securityStyles}</style>
 
-      {/*  HERO SECTION  */}
+      {/* HERO SECTION  */}
       <section className="relative h-[80vh] w-full flex items-center justify-center overflow-hidden">
         <div className="absolute inset-0 z-0">
-          <div className="absolute top-1/2 left-1/2 w-[300%] h-[300%] -translate-x-1/2 -translate-y-1/2 pointer-events-none opacity-60">
-            <iframe
-              width="100%" height="100%"
-              src={videoUrl}
-              title="Security Background" frameBorder="0"
-              style={{ objectFit: 'cover', width: '100%', height: '100%' }}
-            ></iframe>
+          <div className="absolute top-1/2 left-1/2 w-[100%] h-[100%] -translate-x-1/2 -translate-y-1/2 pointer-events-none opacity-60">
+            
+            {/* DIRECT VIDEO ONLY */}
+            {videoUrl && (
+                <video
+                    src={videoUrl}
+                    autoPlay
+                    muted
+                    loop
+                    playsInline
+                    className="w-full h-full object-cover pointer-events-none"
+                />
+            )}
+
           </div>
           <div className="absolute inset-0 video-overlay-red pointer-events-none" />
           <div className="absolute inset-0 hud-grid opacity-20 pointer-events-none"></div>
@@ -149,7 +160,7 @@ const Security = () => {
         </div>
       </section>
 
-      {/*  FEATURES GRID  */}
+      {/* FEATURES GRID  */}
       <section className="py-24 px-6 relative z-10">
         <motion.div
           variants={containerVariants}
@@ -194,7 +205,7 @@ const Security = () => {
         </motion.div>
       </section>
 
-      {/*  COMMAND CENTER VISUAL (HUD)  */}
+      {/* COMMAND CENTER VISUAL (HUD)  */}
       <section className="py-24 border-y border-white/5 bg-zinc-950 relative overflow-hidden">
         <div className="max-w-7xl mx-auto px-6 flex flex-col lg:flex-row items-center gap-16">
 
@@ -274,7 +285,7 @@ const Security = () => {
         </div>
       </section>
 
-      {/*  CTA  */}
+      {/* CTA  */}
       <section className="py-32 text-center relative">
         <div className="absolute inset-0 bg-gradient-to-t from-red-900/10 to-transparent pointer-events-none"></div>
         <h2 className="text-4xl font-black text-white mb-8 uppercase italic relative z-10">Secure Your Drive Today</h2>
@@ -286,7 +297,7 @@ const Security = () => {
         </Link>
       </section>
 
-      {/*  SCROLL TO TOP  */}
+      {/* SCROLL TO TOP  */}
       <button
         onClick={scrollToTop}
         className={`fixed bottom-8 right-8 z-50 p-4 bg-red-600 text-white rounded-full shadow-[0_0_20px_rgba(239,68,68,0.6)] hover:bg-white hover:text-red-600 transition-all duration-500 transform hover:-translate-y-1 ${showScrollTop ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10 pointer-events-none'}`}

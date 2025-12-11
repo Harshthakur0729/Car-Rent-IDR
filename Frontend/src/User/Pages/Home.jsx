@@ -67,6 +67,17 @@ const homeStyles = `
       -ms-overflow-style: none;
       scrollbar-width: none;
   }
+
+  /* --- FORCE HIDE VIDEO CONTROLS --- */
+  video::-webkit-media-controls {
+      display: none !important;
+  }
+  video::-webkit-media-controls-enclosure {
+      display: none !important;
+  }
+  video {
+      pointer-events: none; 
+  }
 `;
 
 const Home = () => {
@@ -83,6 +94,9 @@ const Home = () => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const thumbnailRef = useRef(null);
   const [alert, setAlert] = useState({ show: false, message: '' });
+
+  // Refs to force play sub-videos
+  const videoRefs = useRef([]);
 
   const userData = async () => {
     try {
@@ -145,6 +159,19 @@ const Home = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, [API]);
 
+  // FORCE PLAY SUB-VIDEOS
+  useEffect(() => {
+    if (videoData.subVideo && videoData.subVideo.length > 0) {
+      videoRefs.current.forEach(video => {
+        if (video) {
+          video.muted = true;
+          video.defaultMuted = true;
+          video.play().catch(error => console.log("Autoplay prevented:", error));
+        }
+      });
+    }
+  }, [videoData.subVideo]);
+
   const Booknow = (e, car) => {
     if (e) e.stopPropagation();
     const token = localStorage.getItem("userToken");
@@ -191,7 +218,7 @@ const Home = () => {
     <div className="min-h-screen bg-black text-white font-sans selection:bg-cyan-500 selection:text-black overflow-x-hidden">
       <style>{homeStyles}</style>
 
-      {/*  ALERT MODAL  */}
+      {/* ALERT MODAL  */}
       <AnimatePresence>
         {alert.show && (
           <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/90 backdrop-blur-md p-4">
@@ -206,14 +233,23 @@ const Home = () => {
         )}
       </AnimatePresence>
 
-      {/*  HERO SECTION  */}
+      {/* HERO SECTION  */}
       <section className="relative h-screen w-full flex items-center justify-center overflow-hidden">
         <div className="absolute inset-0 z-0 overflow-hidden">
-          <div className="absolute top-1/2 left-1/2 w-[300%] h-[300%] -translate-x-1/2 -translate-y-1/2 pointer-events-none">
-            {/* Main Video */}
+          <div className="absolute top-1/2 left-1/2 w-[100%] h-[100%] -translate-x-1/2 -translate-y-1/2 pointer-events-none">
+
+            {/* DIRECT VIDEO FROM DATABASE (No YouTube) */}
             {videoData.main && (
-              <iframe width="100%" height="100%" src={videoData.main} title="Supercar Background" frameBorder="0" style={{ objectFit: 'cover', width: '100%', height: '100%' }}></iframe>
+              <video
+                src={videoData.main}
+                autoPlay
+                muted
+                loop
+                playsInline
+                className="absolute inset-0 w-full h-full object-cover pointer-events-none"
+              />
             )}
+
           </div>
           <div className="absolute inset-0 video-overlay pointer-events-none" />
           <div className="absolute inset-0 bg-grid-move z-10 pointer-events-none" style={{ perspective: '500px', transform: 'rotateX(20deg) scale(1.5)' }}></div>
@@ -229,7 +265,7 @@ const Home = () => {
         <div className="absolute bottom-12 left-1/2 transform -translate-x-1/2 animate-bounce opacity-50"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M7 13l5 5 5-5M7 6l5 5 5-5" /></svg></div>
       </section>
 
-      {/*  DYNAMIC SERVICE VIDEO STRIP  */}
+      {/* DYNAMIC SERVICE VIDEO STRIP  */}
       <section className="py-20 bg-zinc-950 border-y border-zinc-900 relative z-10 overflow-hidden">
         <div className="max-w-7xl mx-auto px-6">
 
@@ -240,13 +276,10 @@ const Home = () => {
             let containerClass = "";
 
             if (count === 1) {
-              // 1 Video: Center
               containerClass = "flex justify-center";
             } else if (count === 2) {
-              // 2 Videos: Space Between (Left & Right)
               containerClass = "flex flex-col md:flex-row justify-between gap-8";
             } else {
-              // 3+ Videos: Horizontal Scroll
               containerClass = "flex gap-8 overflow-x-auto hide-scrollbar pb-4";
             }
 
@@ -263,13 +296,17 @@ const Home = () => {
                                     ${count === 1 ? "md:w-[600px] " : ""}
                                 `}
                   >
+                    {/* VIDEO STRIP ITEM */}
                     <video
+                      ref={el => videoRefs.current[idx] = el}
                       src={videoSrc}
-                      className="w-full h-60 object-cover"
+                      className="w-full h-60 object-cover pointer-events-none"
                       autoPlay
                       loop
                       muted
                       playsInline
+                      disablePictureInPicture
+                      controlsList="nodownload nofullscreen noremoteplayback"
                     />
                     {/* Optional Overlay on Hover */}
                     <div className="absolute inset-0 bg-black/20 group-hover:bg-transparent transition-all duration-300 pointer-events-none"></div>
@@ -288,8 +325,7 @@ const Home = () => {
         </div>
       </section>
 
-      {/*  DYNAMIC RENTALS SHOWCASE  */}
-      {/* Same as before */}
+      {/* DYNAMIC RENTALS SHOWCASE  */}
       <section className="py-24 bg-black relative overflow-hidden">
         <div className="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-l from-zinc-900/20 to-transparent pointer-events-none"></div>
         <div className="max-w-7xl mx-auto px-6 relative z-10">
@@ -304,7 +340,7 @@ const Home = () => {
                 <div className="h-[60%] relative overflow-hidden">
                   <img src={car.images[0]} alt={car.name} className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 group-hover:brightness-110" />
                   <div className="absolute inset-0 bg-gradient-to-t from-zinc-900 via-transparent to-transparent" />
-                  <div className="absolute top-4 right-4 bg-black/60 backdrop-blur-md px-2 py-2 rounded-full border border-white/10 text-white group-hover:bg-cyan-500 group-hover:text-black transition-colors"><Gauge size={16} /></div>
+                  <div className="absolute top-4 right-4 bg-black/  60 backdrop-blur-md px-2 py-2 rounded-full border border-white/10 text-white group-hover:bg-cyan-500 group-hover:text-black transition-colors"><Gauge size={16} /></div>
                   <div className="absolute top-4 left-4 px-3 py-1 bg-black/60 backdrop-blur-md border border-white/10 rounded text-[10px] font-bold tracking-widest uppercase text-white">{car.type || "LUXURY"}</div>
                 </div>
                 <div className="flex-1 p-8 flex flex-col justify-between bg-zinc-900 relative z-10">
@@ -320,7 +356,7 @@ const Home = () => {
         </div>
       </section>
 
-      {/*  DETAILS MODAL  */}
+      {/* DETAILS MODAL  */}
       <AnimatePresence>
         {selectedCar && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-xl p-4" onClick={closeModal}>
