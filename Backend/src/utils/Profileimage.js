@@ -62,15 +62,7 @@ export const Admin_upload = multer({
 });
 
 
-const docFile = new CloudinaryStorage({
-    cloudinary,
-    params: async (req, file) => ({
-        folder: "Document_File_upload",
-        format: file.mimetype.split("/")[1], // jpg, png, webp
-        public_id: `${Date.now()}-${Math.round(Math.random() * 1e9)}`,
-        type: "authenticated"
-    }),
-});
+const docFile = multer.memoryStorage(); // file RAM me store
 
 export const docFileUpload = multer({
     storage: docFile,

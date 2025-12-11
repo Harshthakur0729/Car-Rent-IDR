@@ -412,9 +412,9 @@ export const deleteAccount = async (req, res) => {
 // User Document Verification
 export const doc = async (req, res) => {
     try {
-        const card = req?.file?.path;
+        const file = req?.file;
 
-        if (!card) {
+        if (!file) {
             return res.status(400).json({ message: "Document is required." });
         }
 
@@ -424,14 +424,16 @@ export const doc = async (req, res) => {
             return res.status(404).json({ message: "User not found." });
         }
 
-        user.card = card;
+        // Convert buffer to base64 string and save
+        const base64String = `data:${file.mimetype};base64,${file.buffer.toString("base64")}`;
+        user.card = base64String;
         user.cardverify = true;
 
         await user.save();
 
         return res.status(200).json({
             message: "Document uploaded successfully.",
-            card: card
+            card: base64String
         });
 
     } catch (error) {
@@ -439,6 +441,7 @@ export const doc = async (req, res) => {
         return res.status(500).json({ message: "Server error." });
     }
 };
+
 
 // User Help Message Send 
 export const userHelp = async (req, res) => {

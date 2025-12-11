@@ -29,11 +29,10 @@ const AdminManagement = () => {
   const fetchCurrentProfile = async () => {
     try {
       const token = localStorage.getItem("adminToken");
-      const res = await axios.get(`${API}/admin/profile`, { 
+      const res = await axios.get(`${API}/admin/profile`, {
         withCredentials: true,
         headers: { Authorization: `Bearer ${token}` }
       });
-      console.log("dhbskh", res);
 
       if (res.data) {
         setCurrentAdmin(res.data.admin);
@@ -48,7 +47,7 @@ const AdminManagement = () => {
     setLoading(true);
     try {
       const token = localStorage.getItem("adminToken");
-      const res = await axios.get(`${API}/admin/all-admin-data`, { 
+      const res = await axios.get(`${API}/admin/all-admin-data`, {
         withCredentials: true,
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -75,7 +74,7 @@ const AdminManagement = () => {
     }
     try {
       const token = localStorage.getItem("adminToken");
-      const res = await axios.delete(`${API}/admin/delete/${id}`, { 
+      const res = await axios.delete(`${API}/admin/delete/${id}`, {
         withCredentials: true,
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -104,7 +103,7 @@ const AdminManagement = () => {
     e.preventDefault();
     try {
       const token = localStorage.getItem("adminToken");
-      const res = await axios.put(`${API}/admin/update/${editAdminId}`, formData, { 
+      const res = await axios.put(`${API}/admin/update/${editAdminId}`, formData, {
         withCredentials: true,
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -137,7 +136,7 @@ const AdminManagement = () => {
     }
     try {
       const token = localStorage.getItem("adminToken");
-      const res = await axios.post(`${API}/admin/register`, formData, { 
+      const res = await axios.post(`${API}/admin/register`, formData, {
         withCredentials: true,
         headers: { Authorization: `Bearer ${token}` }
       });

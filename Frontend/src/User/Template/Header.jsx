@@ -47,7 +47,7 @@ const Header = ({ datas }) => {
 
 
   const API = import.meta.env.VITE_BACKEND_URL;
-  const token =  localStorage.getItem("userToken");
+  const token = localStorage.getItem("userToken");
 
   const [data, setData] = useState({})
   const fetchProfile = async () => {
@@ -147,7 +147,7 @@ const Header = ({ datas }) => {
           <div className="lg:hidden relative z-20 bg-zinc-950/95 backdrop-blur-xl border-t border-white/10 mobile-menu-enter">
             <div className="px-6 pt-4 pb-8 space-y-4">
               <div className="flex items-center gap-4 pb-4 border-b border-white/10 cursor-pointer " onClick={() => { navigate('/profile'); setIsMobileMenuOpen(false); }}>
-                <img src={data.profileImage} alt="User" className="w-12 h-12 rounded-full border-2 border-cyan-500/50" />
+                <img src={data.profileImage} alt="User" className="w-12 h-12 rounded-full border-2 border-cyan-500/50  object-center object-scale-down" />
                 <div>
                   <div className="text-sm font-bold text-white ">My Profile</div>
                   <div className="text-xs text-zinc-500">View Account</div>
